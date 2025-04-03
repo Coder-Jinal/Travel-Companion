@@ -1,0 +1,22 @@
+{
+  "name": "travel-companion",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon ./index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "axios": "^1.8.4",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
+    "install": "^0.13.0",
+    "node-cache": "^5.1.2",
+    "nodemon": "^3.1.9",
+    "pug": "^3.0.3"
+  }
+}

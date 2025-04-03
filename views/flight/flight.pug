@@ -1,0 +1,290 @@
+//- doctype html
+//- html(lang="en")
+//-   head
+//-     meta(charset="UTF-8")
+//-     meta(name="viewport", content="width=device-width, initial-scale=1.0")
+//-     title= title
+//-     link(rel="stylesheet", href="/styles/style.css")
+//-     link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css")
+//-   body
+//-     include ../header.pug
+    
+//-     main.container
+//-       h1 Flight Results
+      
+//-       .search-summary
+//-         p Showing flights from #{search.origin.toUpperCase()} to #{search.destination.toUpperCase()} on #{search.date}
+//-         a(href="/flight")
+//-           button.secondary New Search
+      
+//-       if flights && flights.length
+//-         .flight-results
+//-           each flight in flights
+//-             .card.flight-card.position-relative
+//-               button.btn-save-flight.position-absolute.top-0.end-0.m-2(
+//-                 data-flight-id=flight.flightNumber
+//-                 data-airline=flight.airline
+//-                 data-flight-number=flight.flightNumber
+//-                 data-origin=search.origin
+//-                 data-destination=search.destination
+//-                 data-departure-time=flight.departureTime
+//-                 data-arrival-time=flight.arrivalTime
+//-                 data-price=flight.price
+//-                 data-duration=flight.duration
+//-                 data-status=flight.status
+//-               )
+//-                 i.fas.fa-heart
+//-               .card-header
+//-                 h3 #{flight.airline} - Flight #{flight.flightNumber}
+//-               .card-body
+//-                 .row
+//-                   .col
+//-                     h4 Departure
+//-                     p.airport #{flight.departureAirport} (#{search.origin.toUpperCase()})
+//-                     p.time #{flight.departureTime}
+//-                   .col
+//-                     h4 Arrival
+//-                     p.airport #{flight.arrivalAirport} (#{search.destination.toUpperCase()})
+//-                     p.time #{flight.arrivalTime}
+//-                   .col
+//-                     h4 Details
+//-                     p.duration Duration: #{flight.duration}
+//-                     p.status Status: #{flight.status}
+//-                     p.price Price: #{flight.price}
+                
+//-                 .flight-actions
+//-                   if flight.bookingLinks && flight.bookingLinks.skyscanner
+//-                     a(href=flight.bookingLinks.skyscanner target="_blank" rel="noopener noreferrer").btn.book-now Book Now
+//-       else
+//-         p.no-results No flights found for your search criteria. Please try different dates or airports.
+
+//-     script.
+//-       document.addEventListener('DOMContentLoaded', () => {
+//-         // Use event delegation for saving flights
+//-         document.querySelector('.flight-results').addEventListener('click', async (e) => {
+//-           const button = e.target.closest('.btn-save-flight');
+//-           if (!button) return;
+
+//-           console.log('Save flight button clicked:', button);
+          
+//-           const dataset = button.dataset;
+//-           console.log('Flight dataset:', dataset);
+          
+//-           try {
+//-             const response = await fetch('/trip-overview/save-flight', {
+//-               method: 'POST',
+//-               headers: {
+//-                 'Content-Type': 'application/json',
+//-               },
+//-               body: JSON.stringify({
+//-                 flightId: dataset.flightNumber,
+//-                 airline: dataset.airline,
+//-                 flightNumber: dataset.flightNumber,
+//-                 origin: dataset.origin,
+//-                 destination: dataset.destination,
+//-                 departureTime: dataset.departureTime,
+//-                 arrivalTime: dataset.arrivalTime,
+//-                 price: dataset.price,
+//-                 duration: dataset.duration,
+//-                 status: dataset.status
+//-               })
+//-             });
+
+//-             console.log('Response status:', response.status);
+//-             const result = await response.json();
+//-             console.log('Response body:', result);
+            
+//-             if (response.ok) {
+//-               // Visual feedback for saved flight
+//-               button.classList.add('saved');
+//-               button.innerHTML = '<i class="fas fa-heart text-danger"></i>';
+              
+//-               // Show success message
+//-               const alertDiv = document.createElement('div');
+//-               alertDiv.className = 'alert alert-success position-fixed top-0 start-50 translate-middle-x mt-3';
+//-               alertDiv.textContent = 'Flight saved to your trip!';
+//-               document.body.appendChild(alertDiv);
+              
+//-               // Remove alert after 3 seconds
+//-               setTimeout(() => {
+//-                 alertDiv.remove();
+//-               }, 3000);
+//-             } else {
+//-               console.error('Save flight error:', result.message);
+              
+//-               // Show error message
+//-               const alertDiv = document.createElement('div');
+//-               alertDiv.className = 'alert alert-danger position-fixed top-0 start-50 translate-middle-x mt-3';
+//-               alertDiv.textContent = result.message || 'Failed to save flight';
+//-               document.body.appendChild(alertDiv);
+              
+//-               // Remove alert after 3 seconds
+//-               setTimeout(() => {
+//-                 alertDiv.remove();
+//-               }, 3000);
+//-             }
+//-           } catch (error) {
+//-             console.error('Error:', error);
+            
+//-             // Show error message
+//-             const alertDiv = document.createElement('div');
+//-             alertDiv.className = 'alert alert-danger position-fixed top-0 start-50 translate-middle-x mt-3';
+//-             alertDiv.textContent = 'Failed to save flight';
+//-             document.body.appendChild(alertDiv);
+            
+//-             // Remove alert after 3 seconds
+//-             setTimeout(() => {
+//-               alertDiv.remove();
+//-             }, 3000);
+//-           }
+//-         });
+//-       });
+
+//-     include ../footer.pug
+
+
+
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title= title
+    link(rel="stylesheet", href="/styles/style.css")
+    link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css")
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  body
+    include ../header.pug
+    
+    main.container
+      h1 Flight Results
+      
+      .search-summary
+        p Showing flights from #{search.origin.toUpperCase()} to #{search.destination.toUpperCase()} on #{search.date}
+        a(href="/flight")
+          button.secondary New Search
+      
+      if flights && flights.length
+        .flight-results
+          each flight in flights
+            .card.flight-card.position-relative
+              button.btn-save-flight.position-absolute.top-0.end-0.m-2(
+                data-flight-id=flight.flightNumber
+                data-airline=flight.airline
+                data-flight-number=flight.flightNumber
+                data-origin=search.origin
+                data-destination=search.destination
+                data-departure-time=flight.departureTime
+                data-arrival-time=flight.arrivalTime
+                data-price=flight.price
+                data-duration=flight.duration
+                data-status=flight.status
+              )
+                i.fas.fa-heart
+              .card-header
+                h3 #{flight.airline} - Flight #{flight.flightNumber}
+              .card-body
+                .row
+                  .col
+                    h4 Departure
+                    p.airport #{flight.departureAirport} (#{search.origin.toUpperCase()})
+                    p.time #{flight.departureTime}
+                  .col
+                    h4 Arrival
+                    p.airport #{flight.arrivalAirport} (#{search.destination.toUpperCase()})
+                    p.time #{flight.arrivalTime}
+                  .col
+                    h4 Details
+                    p.duration Duration: #{flight.duration}
+                    p.status Status: #{flight.status}
+                    p.price Price: #{flight.price}
+                
+                .flight-actions
+                  if flight.bookingLinks && flight.bookingLinks.skyscanner
+                    a(href=flight.bookingLinks.skyscanner target="_blank" rel="noopener noreferrer").btn.book-now Book Now
+      else
+        p.no-results No flights found for your search criteria. Please try different dates or airports.
+
+    script.
+      document.addEventListener('DOMContentLoaded', () => {
+        // Use event delegation for saving flights
+        document.querySelector('.flight-results').addEventListener('click', async (e) => {
+          const button = e.target.closest('.btn-save-flight');
+          if (!button) return;
+
+          console.log('Save flight button clicked:', button);
+          
+          const dataset = button.dataset;
+          console.log('Flight dataset:', dataset);
+          
+          try {
+            const response = await fetch('/trip-overview/save-flight', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                flightId: dataset.flightNumber,
+                airline: dataset.airline,
+                flightNumber: dataset.flightNumber,
+                origin: dataset.origin,
+                destination: dataset.destination,
+                departureTime: dataset.departureTime,
+                arrivalTime: dataset.arrivalTime,
+                price: dataset.price,
+                duration: dataset.duration,
+                status: dataset.status
+              })
+            });
+
+            console.log('Response status:', response.status);
+            const result = await response.json();
+            console.log('Response body:', result);
+            
+            if (response.ok) {
+              // Visual feedback for saved flight
+              button.classList.add('saved');
+              button.innerHTML = '<i class="fas fa-heart text-danger"></i>';
+              
+              // Show success message
+              const alertDiv = document.createElement('div');
+              alertDiv.className = 'alert alert-success position-fixed top-0 start-50 translate-middle-x mt-3';
+              alertDiv.textContent = 'Flight saved to your trip!';
+              document.body.appendChild(alertDiv);
+              
+              // Remove alert after 3 seconds
+              setTimeout(() => {
+                alertDiv.remove();
+              }, 3000);
+            } else {
+              console.error('Save flight error:', result.message);
+              
+              // Show error message
+              const alertDiv = document.createElement('div');
+              alertDiv.className = 'alert alert-danger position-fixed top-0 start-50 translate-middle-x mt-3';
+              alertDiv.textContent = result.message || 'Failed to save flight';
+              document.body.appendChild(alertDiv);
+              
+              // Remove alert after 3 seconds
+              setTimeout(() => {
+                alertDiv.remove();
+              }, 3000);
+            }
+          } catch (error) {
+            console.error('Error:', error);
+            
+            // Show error message
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-danger position-fixed top-0 start-50 translate-middle-x mt-3';
+            alertDiv.textContent = 'Failed to save flight';
+            document.body.appendChild(alertDiv);
+            
+            // Remove alert after 3 seconds
+            setTimeout(() => {
+              alertDiv.remove();
+            }, 3000);
+          }
+        });
+      });
+
+    include ../footer.pug

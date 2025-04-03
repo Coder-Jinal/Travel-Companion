@@ -1,0 +1,167 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title= title
+    link(rel="stylesheet", href="/styles/style.css")
+    link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css")
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  body
+    include ../header.pug
+    
+    main.container
+      h1= title
+      
+      if error
+        .alert.alert-error
+          p= error
+      
+      if search
+        .search-summary
+          h3 Search Details
+          p 
+            strong Location: 
+            | #{search.city}
+          p 
+            strong Check-in: 
+            | #{search.checkIn}
+          p 
+            strong Check-out: 
+            | #{search.checkOut}
+          p 
+            strong Guests: 
+            | #{search.guests}
+      
+      if hotels && hotels.length > 0
+        p Found #{hotels.length} accommodations matching your criteria
+        a.back-link(href="/hotel") New Search
+        
+        .hotel-grid#hotelGrid
+          each hotel in hotels
+            .hotel-card.position-relative
+              img.hotel-image(
+                src=hotel.thumbnail 
+                alt=hotel.name
+                onerror="this.onerror=null;this.src='https://placehold.co/600x400?text=Hotel';"
+              )
+              button.btn-save-hotel.position-absolute.top-0.end-0.m-2(
+                data-hotel-id=hotel.id
+                data-hotel-name=hotel.name
+                data-hotel-city=search.city
+                data-hotel-checkin=search.checkIn
+                data-hotel-checkout=search.checkOut
+                data-hotel-price=hotel.totalPrice
+                data-hotel-thumbnail=hotel.thumbnail
+              )
+                i.fas.fa-heart
+              .hotel-details
+                h3.hotel-name= hotel.name
+                .hotel-rating
+                  - let stars = Math.floor(hotel.rating)
+                  - let remaining = hotel.rating - stars
+                  - for (let i = 0; i < stars; i++)
+                    span ★
+                  if remaining >= 0.5
+                    span ★
+                  - let emptyStars = 5 - Math.ceil(hotel.rating)
+                  - for (let i = 0; i < emptyStars; i++)
+                    span ☆
+                  span  #{hotel.rating.toFixed(1)}
+                p.hotel-address= hotel.address
+                if hotel.pricePerNight
+                  p.hotel-price $#{hotel.pricePerNight.toFixed(2)} per night
+                if hotel.totalPrice
+                  p.hotel-price.total-price
+                    strong Total: $#{hotel.totalPrice.toFixed(2)}
+                    if hotel.nights
+                      |  for #{hotel.nights} nights
+                .hotel-amenities
+                  each amenity in hotel.amenities.slice(0, 4)
+                    span.amenity-tag= amenity
+                button.book-button(onclick=`window.open('${hotel.expediaBookingLink}', '_blank')`) Book Now
+      else
+        .no-results
+          h2 No accommodations found
+          p Try adjusting your search criteria or try a different location.
+    
+    script.
+      document.addEventListener('DOMContentLoaded', () => {
+        // Use event delegation for saving hotels
+        document.getElementById('hotelGrid').addEventListener('click', async (e) => {
+          const button = e.target.closest('.btn-save-hotel');
+          if (!button) return;
+
+          console.log('Save hotel button clicked:', button);
+          
+          const dataset = button.dataset;
+          console.log('Hotel dataset:', dataset);
+          
+          try {
+            const response = await fetch('/trip-overview/save-hotel', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+              hotelId: dataset.hotelId,
+              hotelName: dataset.hotelName,
+              hotelCity: dataset.hotelCity,
+              hotelPrice: dataset.hotelPrice,
+              hotelThumbnail: dataset.hotelThumbnail,
+              address: button.closest('.hotel-card').querySelector('.hotel-address').textContent.trim(),
+              amenities: Array.from(
+                button.closest('.hotel-card').querySelectorAll('.amenity-tag')
+              ).map(el => el.textContent.trim())
+            })
+          });
+
+            console.log('Response status:', response.status);
+            const result = await response.json();
+            console.log('Response body:', result);
+            
+            if (response.ok) {
+              // Visual feedback for saved hotel
+              button.classList.add('saved');
+              button.innerHTML = '<i class="fas fa-heart text-danger"></i>';
+              
+              // Show success message
+              const alertDiv = document.createElement('div');
+              alertDiv.className = 'alert alert-success position-fixed top-0 start-50 translate-middle-x mt-3';
+              alertDiv.textContent = 'Hotel saved to your trip!';
+              document.body.appendChild(alertDiv);
+              
+              // Remove alert after 3 seconds
+              setTimeout(() => {
+                alertDiv.remove();
+              }, 3000);
+            } else {
+              console.error('Save hotel error:', result.message);
+              
+              // Show error message
+              const alertDiv = document.createElement('div');
+              alertDiv.className = 'alert alert-danger position-fixed top-0 start-50 translate-middle-x mt-3';
+              alertDiv.textContent = result.message || 'Failed to save hotel';
+              document.body.appendChild(alertDiv);
+              
+              // Remove alert after 3 seconds
+              setTimeout(() => {
+                alertDiv.remove();
+              }, 3000);
+            }
+          } catch (error) {
+            console.error('Error:', error);
+            
+            // Show error message
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-danger position-fixed top-0 start-50 translate-middle-x mt-3';
+            alertDiv.textContent = 'Failed to save hotel';
+            document.body.appendChild(alertDiv);
+            
+            // Remove alert after 3 seconds
+            setTimeout(() => {
+              alertDiv.remove();
+            }, 3000);
+          }
+        });
+      });
